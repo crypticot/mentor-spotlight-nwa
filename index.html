@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Nwa // The Case Files</title>
+    <style>
+        /* --- DESIGN SYSTEM & SYSTEM VARIABLES --- */
+        :root {
+            --bg-deep-blue: #020710;
+            --bg-panel: rgba(6, 17, 36, 0.85);
+            --accent-cyan: #00f3ff;
+            --accent-orange: #ff7300;
+            --accent-alert: #ff3b3b;
+            --text-primary: #e2edfa;
+            --text-muted: #536d93;
+            --font-header: 'Arial Black', Impact, sans-serif;
+            --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        }
+
+        /* --- GLOBAL SETUP & SCROLLBARS --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-deep-blue);
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 14px;
+            overflow-x: hidden;
+        }
+
+        /* --- STYLISED NOIR BACKDROP --- */
+        .fixed-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-image: url('agent-nwa.jpg');
+            background-size: cover;
+            background-position: center;
+            filter: contrast(175%) brightness(12%) sepia(40%) hue-rotate(180deg);
+            mix-blend-mode: luminosity;
+            z-index: -2;
+            pointer-events: none;
+        }
+
+        .ambient-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at 75% 40%, rgba(255, 115, 0, 0.06), transparent 60%),
+                        linear-gradient(rgba(0, 243, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 35px 35px;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent-cyan), transparent);
+            opacity: 0.25;
+            animation: scanning 7s infinite linear;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        @keyframes scanning {
+            0% { top: -5%; }
+            100% { top: 105%; }
+        }
+
+        /* --- IMMERSIVE FRAME LAYOUT --- */
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .case-frame {
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            align-items: center;
+            gap: 40px;
+            padding: 8vh 0;
+            border-bottom: 1px dashed rgba(0, 243, 255, 0.15);
+            position: relative;
+        }
+
+        /* --- FRAME 1: MINIMALIST INTRO --- */
+        .intro-frame {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            height: 100vh;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+        }
+
+        .stamp {
+            border: 2px solid var(--accent-alert);
+            color: var(--accent-alert);
+            padding: 3px 10px;
+            font-family: var(--font-header);
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transform: rotate(-2deg);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        h1 {
+            font-family: var(--font-header);
+            font-size: clamp(2.8rem, 7vw, 5rem);
+            line-height: 0.9;
+            text-transform: uppercase;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--accent-cyan);
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            font-size: clamp(0.9rem, 2.5vw, 1.2rem);
+            margin-bottom: 50px;
+        }
+
+        .scroll-prompt {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        /* --- ANIMATED SUMMARY CARDS (LEFT SIDE) --- */
+        .summary-card {
+            background: var(--bg-panel);
+            position: relative;
+            padding: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            overflow: hidden;
+            border: 1px solid rgba(0, 243, 255, 0.15);
+        }
+
+        .summary-card:hover {
+            transform: translateY(-4px);
+        }
+
+        /* Laser Border Trace Animation */
+        .summary-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border: 2px solid transparent;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+
+        .summary-card:hover::before {
+            animation: borderTrace 1s linear infinite;
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-cyan);
+        }
+
+        @keyframes borderTrace {
+            0% { border-top-color: var(--accent-cyan); border-right-color: transparent; border-bottom-color: transparent; border-left-color: transparent; }
+            25% { border-top-color: transparent; border-right-color: var(--accent-cyan); border-bottom-color: transparent; border-left-color: transparent; }
+            50% { border-top-color: transparent; border-right-color: transparent; border-bottom-color: var(--accent-cyan); border-left-color: transparent; }
+            75% { border-top-color: transparent; border-right-color: transparent; border-bottom-color: transparent; border-left-color: var(--accent-cyan); }
+            100% { border-top-color: var(--accent-cyan); border-right-color: transparent; border-bottom-color: transparent; border-left-color: transparent; }
+        }
+
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .summary-card h3 {
+            font-family: var(--font-header);
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: -0.5px;
+        }
+
+        .summary-card p {
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            opacity: 0.85;
+            line-height: 1.6;
+        }
+
+        .action-tag {
+            margin-top: 20px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-align: right;
+        }
+
+        /* --- THE EVIDENCE DESK (RIGHT SIDE) --- */
+        .evidence-table {
+            position: relative;
+            height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .evidence-photo {
+            position: absolute;
+            width: 190px;
+            background: #dad3c5;
+            padding: 10px 10px 30px 10px;
+            box-shadow: 10px 15px 30px rgba(0,0,0,0.85);
+            transform: translate(var(--x), var(--y)) rotate(var(--r));
+            transition: transform 0.3s ease, z-index 0s;
+            cursor: pointer;
+            z-index: var(--z);
+        }
+
+        .evidence-photo:hover {
+            transform: translate(var(--x), calc(var(--y) - 15px)) rotate(calc(var(--r) * 0.3)) scale(1.1);
+            z-index: 80;
+        }
+
+        /* Blueprint/Placeholder style for photos before click */
+        .photo-blueprint {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(45deg, #071324 25%, transparent 25%), 
+                        linear-gradient(-45deg, #071324 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #071324 75%), 
+                        linear-gradient(-45deg, transparent 75%, #071324 75%);
+            background-size: 16px 16px;
+            background-color: #0b1a2e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--accent-cyan);
+            border: 1px solid rgba(0, 243, 255, 0.2);
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+        }
+
+        .photo-blueprint::after {
+            content: '[ ENCRYPTED ]';
+            margin-top: 5px;
+            color: var(--accent-orange);
+            font-size: 0.6rem;
+        }
+
+        .photo-label {
+            color: #1a1a1a;
+            font-size: 0.65rem;
+            font-weight: bold;
+            margin-top: 8px;
+            text-transform: uppercase;
+            border-top: 1px dashed rgba(0,0,0,0.2);
+            padding-top: 5px;
+            letter-spacing: 0.5px;
+        }
+
+        /* --- INTERACTIVE DOSSIER POPUPS --- */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(2, 7, 16, 0.7);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .popup-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dossier-window {
+            background: #061224;
+            border: 1px solid var(--accent-cyan);
+            width: 100%;
+            max-width: 750px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+        }
+
+        .window-header {
+            background: rgba(0, 243, 255, 0.08);
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(0, 243, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: #061224;
+        }
+
+        .window-title {
+            font-family: var(--font-header);
+            color: #fff;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        .close-btn {
+            background: transparent;
+            border: 1px solid var(--accent-alert);
+            color: var(--accent-alert);
+            padding: 5px 14px;
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: var(--accent-alert);
+            color: #fff;
+        }
+
+        .window-body {
+            padding: 30px 25px;
+        }
+
+        .intel-block {
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 15px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .intel-block p {
+            margin-bottom: 12px;
+        }
+
+        .takeaway-footer {
+            background: rgba(255, 115, 0, 0.05);
+            border: 1px solid rgba(255, 115, 0, 0.2);
+            padding: 15px;
+            font-size: 0.85rem;
+            margin-top: 25px;
+        }
+
+        .takeaway-footer strong {
+            color: var(--accent-orange);
+        }
+
+        /* --- LIGHTBOX FOR REAL SCREENS --- */
+        .lightbox {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(1, 4, 11, 0.96);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+            padding: 20px;
+        }
+
+        .lightbox.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .lightbox img {
+            max-width: 95%;
+            max-height: 80vh;
+            object-fit: contain;
+            border: 1px solid var(--text-muted);
+        }
+
+        .lightbox-controls {
+            margin-top: 20px;
+        }
+
+        /* --- SCROLL ANIMATION BUILD --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(40px);
+            transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- RESPONSIVE GRID CONFIGS (MOBILE COMPATIBILITY) --- */
+        @media (max-width: 850px) {
+            .case-frame {
+                grid-template-columns: 1fr;
+                padding: 6vh 0;
+                gap: 20px;
+            }
+            .evidence-table {
+                height: 320px;
+            }
+            .evidence-photo {
+                width: 140px;
+            }
+            .window-body {
+                padding: 20px 15px;
+            }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.3; }
+            50% { opacity: 1; }
+            100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fixed-background"></div>
+    <div class="ambient-overlay"></div>
+    <div class="scan-line"></div>
+
+    <div class="container">
+        
+        <!-- FRAME 01: MINIMAL INTRO -->
+        <section class="case-frame intro-frame">
+            <div class="stamp">CLASSIFIED DOCUMENTATION</div>
+            <h1>Agent Nwa</h1>
+            <div class="subtitle">The Case Files</div>
+			<div class="alias-matrix" style="margin-bottom: 40px; color: var(--text-muted); font-size: 0.8rem; letter-spacing: 1px;">
+				<span style="color: var(--accent-orange); font-weight: bold;">KNOWN ALIASES:</span> 
+				<span class="alias-tag" style="animation: pulse 3s infinite; margin-left: 5px;">[ nwa ]</span> • 
+				<span class="alias-tag" style="animation: pulse 3s infinite 1s; margin-left: 5px;">[ Omalicha Nwa ]</span> • 
+				<span class="alias-tag" style="animation: pulse 3s infinite; margin-left: 5px;">[ El Capitán ]</span> • 
+				<span class="alias-tag" style="animation: pulse 3s infinite 1s; margin-left: 5px;">[ Pep ]</span> • 
+				<span class="alias-tag" style="animation: pulse 3s infinite 2s; margin-left: 5px;">[ Achalugo Dike ]</span>
+			</div>
+            <div class="scroll-prompt">// SCROLL DOWN TO UNCOVER OPERATIVE LOGS ▼</div>
+        </section>
+
+		<!-- FRAME 02: RECON -->
+        <section class="case-frame reveal">
+			<div class="summary-card" onclick="openDossier('file-01')">
+                <div class="card-meta"><span>LOG_01</span><span>SYSTEM_INITIATION</span></div>
+                <h3>Initial Reconnaissance & Profile</h3>
+                <p>First contact assessment, the TED talk briefing, and a personal note of recognition weeks later.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -40px; --y: -30px; --r: -7deg; --z: 3;" onclick="openLightbox('LOG_01_1.jpg')">
+                    <div class="photo-blueprint">INIT_PING</div>
+                    <div class="photo-label">FIG 1A: DIRECT COMM, WELL DONE</div>
+                </div>
+                <div class="evidence-photo" style="--x: 40px; --y: 20px; --r: 6deg; --z: 2;" onclick="openLightbox('LOG_01_2.jpg')">
+                    <div class="photo-blueprint">VOLUMETRIC_DATA</div>
+                    <div class="photo-label">FIG 1B: OUTPUT VOLUME REACTION</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 03: LINKEDIN -->
+        <section class="case-frame reveal">
+            <div class="summary-card" onclick="openDossier('file-02')">
+                <div class="card-meta"><span>LOG_02</span><span>OPERATIONAL_TELEMETRY</span></div>
+                <h3>The Narrative Blueprint & Metrics</h3>
+                <p>Named recognition for individual work, and the scoreboard reveal that had the whole channel guessing.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -30px; --y: 20px; --r: -8deg; --z: 3;" onclick="openLightbox('LOG_02_1.jpg')">
+                    <div class="photo-blueprint">EVAL_MATRIX</div>
+                    <div class="photo-label">FIG 2A: NAMED RECOGNITION</div>
+                </div>
+                <div class="evidence-photo" style="--x: 40px; --y: -40px; --r: 5deg; --z: 2;" onclick="openLightbox('LOG_02_2.jpg')">
+                    <div class="photo-blueprint">METRIC_LEADER</div>
+                    <div class="photo-label">FIG 2B: GUESS WHO SCOREBOARD</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 04: DETAILED RESPONSES -->
+        <section class="case-frame reveal">
+            <div class="summary-card" onclick="openDossier('file-03')">
+                <div class="card-meta"><span>LOG_03</span><span>COMM_DUMP</span></div>
+                <h3>High-Volume Intelligence Drops</h3>
+                <p>The four-screenshot teardown. A full landing page review, line by line, with sample copy included.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -50px; --y: -20px; --r: -4deg; --z: 4;" onclick="openLightbox('LOG_03_1.jpg')">
+                    <div class="photo-blueprint">DATA_DECK_1</div>
+                    <div class="photo-label">FIG 3A: THE TEARDOWN (1/4)</div>
+                </div>
+                <div class="evidence-photo" style="--x: 30px; --y: -10px; --r: 10deg; --z: 3;" onclick="openLightbox('LOG_03_2.jpg')">
+                    <div class="photo-blueprint">DATA_DECK_2</div>
+                    <div class="photo-label">FIG 3B: THE TEARDOWN (2/4)</div>
+                </div>
+                <div class="evidence-photo" style="--x: -25px; --y: 60px; --r: -6deg; --z: 2;" onclick="openLightbox('LOG_03_3.jpg')">
+                    <div class="photo-blueprint">DATA_DECK_3</div>
+                    <div class="photo-label">FIG 3C: THE TEARDOWN (3/4)</div>
+                </div>
+                <div class="evidence-photo" style="--x: 20px; --y: 110px; --r: 4deg; --z: 1;" onclick="openLightbox('LOG_03_4.jpg')">
+                    <div class="photo-blueprint">DATA_DECK_4</div>
+                    <div class="photo-label">FIG 3D: THE TEARDOWN (4/4)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 05: SURVEILLANCE -->
+        <section class="case-frame reveal">
+            <div class="summary-card" onclick="openDossier('file-04')">
+                <div class="card-meta"><span>LOG_04</span><span>TACTICAL_OPS</span></div>
+                <h3>Field Surveillance & Feints</h3>
+                <p>The week everything stacked up at once, and the message that landed right when it was needed.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -20px; --y: -40px; --r: -9deg; --z: 3;" onclick="openLightbox('LOG_04_1.jpg')">
+                    <div class="photo-blueprint">PSY_OPS</div>
+                    <div class="photo-label">FIG 4A: NO EXCEPTIONS NOTICE</div>
+                </div>
+                <div class="evidence-photo" style="--x: 50px; --y: -10px; --r: 4deg; --z: 2;" onclick="openLightbox('LOG_04_2.jpg')">
+                    <div class="photo-blueprint">PRESSURE_LOG</div>
+                    <div class="photo-label">FIG 4B: TASK OVERLOAD MOMENT</div>
+                </div>
+                <div class="evidence-photo" style="--x: -10px; --y: 95px; --r: 8deg; --z: 1;" onclick="openLightbox('LOG_04_3.jpg')">
+                    <div class="photo-blueprint">PIPELINE_CTRL</div>
+                    <div class="photo-label">FIG 4C: DOING AMAZINGLY O</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 06: UNFILTERED -->
+        <section class="case-frame reveal">
+            <div class="summary-card" onclick="openDossier('file-05')">
+                <div class="card-meta"><span>LOG_05</span><span>MORALE_SAVE</span></div>
+                <h3>Unfiltered Diagnostics & Stabilization</h3>
+                <p>Someone goes quiet, the unprompted reassurance that surfaced afterward, and testimonials from others to prove Nwa is the best.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -45px; --y: 10px; --r: -5deg; --z: 3;" onclick="openLightbox('LOG_05_1.jpg')">
+                    <div class="photo-blueprint">SIGNAL_CAPT</div>
+                    <div class="photo-label">FIG 5A: WE NEED YOUR FIRE</div>
+                </div>
+                <div class="evidence-photo" style="--x: 40px; --y: -30px; --r: 7deg; --z: 2;" onclick="openLightbox('LOG_05_2.jpg')">
+                    <div class="photo-blueprint">FEEDBACK_DIST</div>
+                    <div class="photo-label">FIG 5B: THANK YOU THREAD</div>
+                </div>
+                <div class="evidence-photo" style="--x: 5px; --y: 105px; --r: -8deg; --z: 1;" onclick="openLightbox('LOG_05_3.jpg')">
+                    <div class="photo-blueprint">COHORT_UPLIFT</div>
+                    <div class="photo-label">FIG 5C: SECOND SHOUT-OUT</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 07: EXTRACTION -->
+        <section class="case-frame reveal">
+            <div class="summary-card" onclick="openDossier('file-06')">
+                <div class="card-meta"><span>LOG_06</span><span>INTEGRITY_PROTOCOLS</span></div>
+                <h3>Operational Integrity & Final Decree</h3>
+                <p>Routine document checks, light banter, and the mentor that showed up for a mentee having a rough day.</p>
+                <div class="action-tag">[ EXTRACT DEBRIEF ]</div>
+            </div>
+
+            <div class="evidence-table">
+                <div class="evidence-photo" style="--x: -30px; --y: -20px; --r: -10deg; --z: 3;" onclick="openLightbox('LOG_06_1.jpg')">
+                    <div class="photo-blueprint">CORE_INTEG</div>
+                    <div class="photo-label">FIG 6A: DOCUMENTS SAVED CHECK</div>
+                </div>
+                <div class="evidence-photo" style="--x: 45px; --y: -15px; --r: 5deg; --z: 2;" onclick="openLightbox('LOG_06_2.jpg')">
+                    <div class="photo-blueprint">STRESS_MATRIX</div>
+                    <div class="photo-label">FIG 6B: DID YOU REALLY CRY</div>
+                </div>
+                <div class="evidence-photo" style="--x: -5px; --y: 110px; --r: -3deg; --z: 1;" onclick="openLightbox('LOG_06_3.jpg')">
+                    <div class="photo-blueprint">MVP_DECREE</div>
+                    <div class="photo-label">FIG 6C: EL CAPITAN STEPS IN</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FRAME 08: VERDICT -->
+        <section class="case-frame reveal" style="grid-template-columns: 1fr;">
+            <div class="summary-card" style="border-top: 3px solid var(--accent-orange);" onclick="openDossier('file-07')">
+                <div class="card-meta" style="color: var(--accent-orange)"><span>CASE_CONCLUSION</span><span>FINAL_VERDICT</span></div>
+                <h3 style="font-size: 1.8rem; text-align: center;">Close the Case</h3>
+                <p style="text-align: center; max-width: 700px; margin: 0 auto;">Six logs. One pattern. What it all adds up to.</p>
+                <div class="action-tag" style="color: var(--accent-orange); text-align: center; margin-top: 25px;">[ READ FINAL VERDICT ]</div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- --- SECURE INTERACTIVE DOSSIER WINDOW --- -->
+    <div class="popup-overlay" id="dossierPopup">
+        <div class="dossier-window">
+            <div class="window-header">
+                <div class="window-title" id="popTitle">DEBRIEF_FILE_SYS</div>
+                <button class="close-btn" onclick="closeDossier()">✖ RETURN TO DOSSIER</button>
+            </div>
+            <div class="window-body">
+                <div id="popContent"></div>
+                <div id="popFooter"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- --- DATA LIGHTBOX SYSTEM FOR ATTACHMENTS --- -->
+    <div class="lightbox" id="secureLightbox">
+        <img id="lightboxImg" src="" alt="Secure Scan">
+        <div class="lightbox-controls">
+            <button class="close-btn" onclick="closeLightbox()">✖ CLOSE INTERCEPT</button>
+        </div>
+    </div>
+
+    <!-- --- DATA MODULE MATRIX --- -->
+    <script>
+        const dossierDatabase = {
+			'file-01': {
+				title: "FILE_01 // INITIAL RECONNAISSANCE DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>First Contact:</strong> Early on, she still had her Cardi B profile picture up. Read as someone not to be messed with. She'd already called out to the whole channel and assigned a TED talk, not a lecture, just a video and a question: what did you take from it? The talk was about giving your audience real value, and how that shapes everything from your features to your ad copy. People advertise better to audiences who feel seen.</p>
+						<p><strong>The Stage 5 Moment:</strong> After a stage 5 submission, she sent a direct message. Not feedback this time, but a proper "I came to say well done."</p>
+					   </div>`,
+				footer: `She notices the work. Then she notices the person who did it.`
+			},
+			'file-02': {
+				title: "FILE_02 // THE NARRATIVE BLUEPRINT DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>Named, Not Lumped In:</strong> After a round of feedback, she came back with specifics. Called out the video editing directly, said it was excellent, and called out to another mentor to see too. Not "good job team." Good job, you, specifically, for this.</p>
+						<p><strong>The Guess Who Game:</strong> Later, she posted a scoreboard screenshot to the whole channel. No names attached, just numbers, and asked everyone to guess who scored what. Within minutes, people had worked it out. 10.5 was tied for the top score.</p>
+						<p><strong>Why It Lands:</strong> Public recognition usually feels like a formality. This felt like an actual reveal. People were invested enough to guess.</p>
+					   </div>`,
+				footer: `Generic praise gets skimmed. Specific praise gets saved for ages.`
+			},
+			'file-03': {
+				title: "FILE_03 // HIGH-VOLUME COMM DATA DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>The Request:</strong> A teammate sent over a landing page for review, hoping for a quick "looks good" or a couple of pointers.</p>
+						<p><strong>What Came Back:</strong> A full teardown. The headline wasn't direct enough. The CTA order was wrong. The testimonials needed real numbers, not vague claims. She rewrote entire lines as examples, gave a sample testimonial, and explained why each change mattered.</p>
+						<p><strong>The Pause:</strong> Halfway through this four-screenshot breakdown, she stopped to write "omo who will read all these things i am typing." Then kept going anyway, all the way to the end.</p>
+					   </div>`,
+				footer: `When something has value, no one cares if it is 3 hrs or 3,000 words. Every word of that review got read. At least twice.`
+			},
+			'file-04': {
+				title: "FILE_04 // SURVEILLANCE & FEINTS DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>The Overload:</strong> Stage 4B task, team task, sales task, PM task, all stacked up at once. I posted a crying dog meme captioned "who send me work."</p>
+						<p><strong>The Firm Part:</strong> Earlier in the thread, she'd already made it clear: the side tasks don't excuse you from the team task. You have to do both to pass. No wiggle room, no long explanation needed.</p>
+						<p><strong>The Soft Part:</strong> Then, right after the meme, she replied with "and you are doing so amazingly o". Not dismissing the stress. Just reminding everyone they were handling it better than they thought.</p>
+					   </div>`,
+				footer: `Hold the standard and still make people laugh. Most mentors can only do one.`
+			},
+			'file-05': {
+				title: "FILE_05 // UNFILTERED DIAGNOSTICS DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>The Quiet One:</strong> A teammate went unusually quiet for a few days. Someone noticed and said it directly: "you're the fire in this team, I need your fire."</p>
+						<p><strong>The Ripple:</strong> Around the same time, in a separate thread, the team was going around thanking people who'd made the cohort better. Nwa's name came up more than once, unprompted. Thanks for the videos and the feedback. Thanks for going in-depth like you'd known someone their whole life.</p>
+						<p><strong>What It Adds Up To:</strong> Nobody asked for these messages. People just remembered how it felt to be helped, and said so.</p>
+					   </div>`,
+				footer: `The kind of impact that gets brought up by other people, unprompted, is the kind that's real.`
+			},
+			'file-06': {
+				title: "FILE_06 // INTEGRITY PROTOCOLS DEBRIEF",
+				text: `<div class="intel-block">
+						<p><strong>The Routine Check:</strong> A message lands on the lock screen, no warning, no preamble. "Do you have all the documents for your team saved?" Just making sure nothing slips through.</p>
+						<p><strong>The Banter:</strong> Other days it was lighter. Someone joked that between marketing and further maths, they didn't know which was worse, it was further maths. Nwa jumped in just to ask, half teasing, "did you really cry?"</p>
+						<p><strong>The Catch:</strong> Then there was the day I had a rough moment after a tough stage. She stepped in. Reminded me of how well I had been doing, and pointed out the team's leaderboard streak wasn't an accident, and that one bad stage doesn't undo it.</p>
+					   </div>`,
+				footer: `Same person checking your documents should also be the one checking on you.`
+			},
+			'file-07': {
+				title: "CASE_CONCLUSION // FINAL VERDICT ARCHIVE",
+				text: `<div class="intel-block">
+						<p><strong>The Pattern:</strong> Across every log, the same thing keeps showing up. She doesn't hand you the answer, she points you toward it. She doesn't just say "good job," she names what was good and who did it. She gives the long, honest feedback even when she's tired of typing it.</p>
+						<p><strong>The Balance:</strong> She holds the line, no excuses for missed tasks, documents need to be saved, deadlines are deadlines. And in the same breath, she's the one telling you that you're doing amazingly, or that one bad stage doesn't define you.</p>
+						<p><strong>What Carries Over:</strong> Rather than leaving people to figure it out alone or doing the work for them, she gives a starting point and lets people find their own way there. She checks in without waiting to be asked. She treats team dynamics as part of the work, not separate from it.</p>
+						<p style="text-align:center; color: var(--accent-orange); margin-top:25px; font-weight:bold;">[ STATUS: ARCHIVE LOCKED // CASE CLOSED ]</p>
+					   </div>`,
+				footer: `Good leadership isn't one big moment. It's a pattern of small ones, repeated until people stop noticing they're being managed and believe they are being looked after.`
+			}
+        };
+
+        // --- CORE NAVIGATION INTERFACE CONTROLS ---
+        function openDossier(id) {
+            const file = dossierDatabase[id];
+            document.getElementById('popTitle').innerText = file.title;
+            document.getElementById('popContent').innerHTML = file.text;
+            document.getElementById('popFooter').innerHTML = `<div class="takeaway-footer">${file.footer}</div>`;
+            
+            document.getElementById('dossierPopup').classList.add('active');
+            document.body.style.overflow = 'hidden'; // Protect scroll vectors
+        }
+
+        function closeDossier() {
+            document.getElementById('dossierPopup').classList.remove('active');
+            document.body.style.overflow = ''; // Release scroll parameters
+        }
+
+        function openLightbox(imgSrc) {
+            document.getElementById('lightboxImg').src = imgSrc; 
+            document.getElementById('secureLightbox').classList.add('active');
+        }
+
+        function closeLightbox() {
+            document.getElementById('secureLightbox').classList.remove('active');
+        }
+
+        // --- SMOOTH FRAMING DETECTOR SYSTEM ---
+        function reveal() {
+            const reveals = document.querySelectorAll(".reveal");
+            reveals.forEach(element => {
+                const windowHeight = window.innerHeight;
+                const elementTop = element.getBoundingClientRect().top;
+                const elementVisible = 120;
+                
+                if (elementTop < windowHeight - elementVisible) {
+                    element.classList.add('active');
+                }
+            });
+        }
+
+        window.addEventListener("scroll", reveal);
+        reveal(); // Initial sweep
+    </script>
+</body>
+</html>
